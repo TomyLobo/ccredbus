@@ -1,5 +1,7 @@
 package eu.tomylobo.ccredbus;
 
+import com.eloraam.redpower.RedPowerBase;
+
 import eu.tomylobo.ccredbus.common.BlockNorthBridge;
 import eu.tomylobo.ccredbus.common.CommonProxy;
 import eu.tomylobo.ccredbus.common.TileEntityNorthBridge;
@@ -65,9 +67,10 @@ public class CCRedbus {
 		GameRegistry.registerTileEntity(TileEntityNorthBridge.class, "ccredbus.tile.northbridge");
 
 		GameRegistry.addRecipe(new ItemStack(Blocks.northBridgeBlock), 
-				new String[] { "   ", "WWW", "S S" }, 
-				'W', Block.planks,
-				'S', Item.stick
+				new String[] { "SSS", "SRS", "SCS" }, 
+				'S', Block.stone,
+				'R', Item.redstone,
+				'C', new ItemStack((Block)(Object)RedPowerBase.blockMicro, 1, 12 << 8)
 		);
 
 		proxy.init();
