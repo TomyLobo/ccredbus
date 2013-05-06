@@ -1,6 +1,7 @@
 package eu.tomylobo.ccredbus.common;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import com.eloraam.redpower.core.IConnectable;
@@ -36,8 +37,7 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 	private static final Method redbusLibGetAddr;
 	static {
 		try {
-			@SuppressWarnings("unchecked")
-			final Class<? extends TileEntity> sortronClass = (Class<? extends TileEntity>) Class.forName("com.eloraam.redpower.machine.TileSortron");
+			final Class<?> sortronClass = Class.forName("com.eloraam.redpower.machine.TileSortron");
 			sortronProcessCommand = sortronClass.getDeclaredMethod("processCommand", new Class<?>[0]);
 			sortronProcessCommand.setAccessible(true);
 
@@ -49,11 +49,11 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 		}
 		catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw new RuntimeException(String.format("Your version of RedPower is incompatible with this version of CCRedbus. "+e.getMessage(), e.getClass().getCanonicalName()), e);
 		}
 		catch (NoSuchMethodException e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw new RuntimeException(String.format("Your version of RedPower is incompatible with this version of CCRedbus. "+e.getMessage(), e.getClass().getCanonicalName()), e);
 		}
 	}
 
@@ -62,6 +62,9 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 		final int slaveId = ((Number) args[0]).intValue();
 
 		final IRedbusConnectable dev = getSlaveById(slaveId);
+		if (dev == null) {
+			throw new Exception("Device with id "+slaveId+" not found.");
+		}
 
 		switch (methodIndex) {
 		case 0: { // getAddr
@@ -92,7 +95,12 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 		}
 
 		case 4: { // sortronProcessCommand
-			sortronProcessCommand.invoke(dev);
+			try {
+				sortronProcessCommand.invoke(dev);
+			}
+			catch (IllegalArgumentException e) {
+				throw new Exception("That's not a Sortron!", e);
+			}
 			return wrap();
 		}
 		}
@@ -100,7 +108,7 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 		return wrap();
 	}
 
-	private IRedbusConnectable getSlaveById(int slaveId) throws Exception {
+	private IRedbusConnectable getSlaveById(int slaveId) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException {
 		return (IRedbusConnectable) redbusLibGetAddr.invoke(null, worldObj, worldCoordConstructor.newInstance(this), slaveId);
 	}
 
