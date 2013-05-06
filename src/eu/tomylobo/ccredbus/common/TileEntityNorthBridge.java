@@ -59,7 +59,7 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 
 	@Override
 	public Object[] callMethod(IComputerAccess computer, int methodIndex, Object[] args) throws Exception {
-		int slaveId = ((Number) args[0]).intValue();
+		final int slaveId = ((Number) args[0]).intValue();
 
 		final IRedbusConnectable dev = getSlaveById(slaveId);
 
@@ -69,7 +69,7 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 		}
 
 		case 1: { // setAddr
-			int address = ((Number) args[1]).intValue();
+			final int address = ((Number) args[1]).intValue();
 
 			dev.rbSetAddr(address);
 
@@ -77,14 +77,14 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 		}
 
 		case 2: { // read
-			int offset = ((Number) args[1]).intValue();
+			final int offset = ((Number) args[1]).intValue();
 
 			return wrap(dev.rbRead(offset));
 		}
 
 		case 3: { // write
-			int offset = ((Number) args[1]).intValue();
-			int value = ((Number) args[2]).intValue();
+			final int offset = ((Number) args[1]).intValue();
+			final int value = ((Number) args[2]).intValue();
 
 			dev.rbWrite(offset, value);
 
