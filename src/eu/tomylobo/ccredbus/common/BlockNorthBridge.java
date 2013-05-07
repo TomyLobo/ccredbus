@@ -15,7 +15,7 @@ public class BlockNorthBridge extends Block {
 		setCreativeTab(CCRedbus.creativeTab);
 		setBlockName("ccredbus.northbridge");
 
-		setHardness(0.5f);
+		setHardness(1.0f);
 		disableStats();
 	}
 
