@@ -59,22 +59,22 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 
 	@Override
 	public Object[] callMethod(IComputerAccess computer, int methodIndex, Object[] args) throws Exception {
-		final int slaveId = ((Number) args[0]).intValue();
+		final int busId = ((Number) args[0]).intValue();
 
-		final IRedbusConnectable dev = getSlaveById(slaveId);
-		if (dev == null) {
-			throw new Exception("Device with id "+slaveId+" not found.");
+		final IRedbusConnectable device = getDeviceByBusId(busId);
+		if (device == null) {
+			throw new Exception("Device with id "+busId+" not found.");
 		}
 
 		switch (methodIndex) {
 		case 0: { // getAddr
-			return wrap(dev.rbGetAddr());
+			return wrap(device.rbGetAddr());
 		}
 
 		case 1: { // setAddr
 			final int address = ((Number) args[1]).intValue();
 
-			dev.rbSetAddr(address);
+			device.rbSetAddr(address);
 
 			return wrap();
 		}
@@ -82,21 +82,21 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 		case 2: { // read
 			final int offset = ((Number) args[1]).intValue();
 
-			return wrap(dev.rbRead(offset));
+			return wrap(device.rbRead(offset));
 		}
 
 		case 3: { // write
 			final int offset = ((Number) args[1]).intValue();
 			final int value = ((Number) args[2]).intValue();
 
-			dev.rbWrite(offset, value);
+			device.rbWrite(offset, value);
 
 			return wrap();
 		}
 
 		case 4: { // sortronProcessCommand
 			try {
-				sortronProcessCommand.invoke(dev);
+				sortronProcessCommand.invoke(device);
 			}
 			catch (IllegalArgumentException e) {
 				throw new Exception("That's not a Sortron!", e);
@@ -108,8 +108,8 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 		return wrap();
 	}
 
-	private IRedbusConnectable getSlaveById(int slaveId) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException {
-		return (IRedbusConnectable) redbusLibGetAddr.invoke(null, worldObj, worldCoordConstructor.newInstance(this), slaveId);
+	private IRedbusConnectable getDeviceByBusId(int busId) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException {
+		return (IRedbusConnectable) redbusLibGetAddr.invoke(null, worldObj, worldCoordConstructor.newInstance(this), busId);
 	}
 
 	@Override
