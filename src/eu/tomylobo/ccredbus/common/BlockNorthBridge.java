@@ -67,9 +67,6 @@ public class BlockNorthBridge extends Block {
 	public int getBlockTextureFromSideAndMetadata(int side, int meta) {
 		// inside inventory 
 		if (meta == 0) {
-			if (side == 3)
-				return 2;
-
 			meta = 2;
 		}
 
