@@ -92,7 +92,7 @@
 		</copy>
 
 		<!-- Copy libs -->
-		<copy todir="${mcplib.dir}">
+		<copy todir="${mcplib.dir}" failonerror="false">
 			<fileset dir="${lib.dir}"/>
 			<regexpmapper from="(.*)\.[^.]*$" to="${mod.name}-dep-\1.jar"/>
 		</copy>
@@ -140,7 +140,7 @@
 		<delete dir="${mcpbin.dir}/dan200"/>
 		<delete dir="${mcpbin.dir}/eu"/>
 
-		<delete dir="${mcplib.dir}" includes="${mod.name}-dep-*"/>
+		<delete dir="${mcplib.dir}" includes="${mod.name}-dep-*" failonerror="false"/>
 
 	</target>
 
@@ -157,6 +157,33 @@
 		<copy todir="C:\Users\Besitzer\AppData\Roaming\maltecraft-1.4.7-5\.minecraft\mods">
 			<fileset dir="${jar.dir}" includes="${mod.name}-${mod.version}.jar" />
 		</copy>
+	</target>
+
+	<target name="install-server" depends="package">
+		<copy todir="D:\Games\Minecraft\server\mods">
+			<fileset dir="${jar.dir}" includes="${mod.name}-${mod.version}.jar" />
+		</copy>
+	</target>
+
+	<target name="start-server" depends="install-server">
+		<java jar="D:\Games\Minecraft\server\minecraft_server.jar"
+			fork="true"
+			failonerror="true"
+			maxmemory="1024m"
+			dir="D:\Games\Minecraft\server"
+		>
+			<arg value="nogui"/>
+		</java>
+	</target>
+
+	<target name="gui-server" depends="install-server">
+		<echo message="Starting server..." />
+		<java jar="D:\Games\Minecraft\server\minecraft_server.jar"
+			fork="true"
+			spawn="true"
+			maxmemory="1024m"
+			dir="D:\Games\Minecraft\server"
+		/>
 	</target>
 
 	<!-- Default target to run -->
