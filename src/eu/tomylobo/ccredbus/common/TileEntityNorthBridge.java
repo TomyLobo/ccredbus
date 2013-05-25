@@ -3,12 +3,12 @@ package eu.tomylobo.ccredbus.common;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import com.eloraam.redpower.core.IConnectable;
 import com.eloraam.redpower.core.IRedbusConnectable;
 
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.IPeripheral;
+import eu.tomylobo.ccredbus.LuaFiles;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 
@@ -118,7 +118,8 @@ public class TileEntityNorthBridge extends TileEntity implements IPeripheral, IC
 	}
 
 	@Override
-	public void attach(IComputerAccess computer) {
+	public void attach(IComputerAccess computerAccess) {
+		LuaFiles.deploy(computerAccess);
 	}
 
 	@Override

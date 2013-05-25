@@ -1,0 +1,131 @@
+local redbusDeviceMeta = {
+	__index = function(self, key)
+		if type(key) ~= "number" then return nil end
+		return self.read(key)
+	end,
+
+	__newindex = function(self, key, value)
+		if type(key) ~= "number" then return rawset(self, key, value) end
+		return self.write(key, value)
+	end,
+}
+
+function wrapDevice(side, busId)
+	local device = {}
+
+	function device.readWord(address)
+		return device.read(address) + 256*device.read(address+1)
+	end
+
+	function device.readDWord(address)
+		return device.readWord(address) + 65536*device.readWord(address+2)
+	end
+
+	function device.writeWord(address, value)
+		device.write(address, value % 256)
+		device.write(address+1, math.floor(value/256))
+	end
+
+	function device.writeDWord(address, value)
+		device.writeWord(address, value % 65536)
+		device.writeWord(address+2, math.floor(value/65536))
+	end
+
+	local methods = peripheral.getMethods(side)
+	assert(methods, "No peripheral present")
+
+	for k,v in pairs(methods) do
+		device[v] = function(...)
+			return peripheral.call(side, v, busId, ...)
+		end
+	end
+
+	return setmetatable(device, redbusDeviceMeta)
+end
+
+
+local SORTRON_COMMAND = 0x00
+local SORTRON_QUANTITY = 0x01
+local SORTRON_SLOT = 0x02
+local SORTRON_ITEM_ID = 0x04
+local SORTRON_DAMAGE = 0x08
+local SORTRON_MAX_DAMAGE = 0x0A
+local SORTRON_OUTPUT_COLOR = 0x0C
+local SORTRON_INPUT_COLOR = 0x0D
+
+local SORTRON_COMMAND_SIZE = 0x01
+local SORTRON_COMMAND_SLOT = 0x02
+local SORTRON_COMMAND_PULL = 0x03
+local SORTRON_COMMAND_MATCH = 0x04
+
+function wrapSortron(side, busId)
+	local sortron = wrapDevice(side, busId or 4)
+
+	function sortron.isReady()
+		return sortron.read(0) == 0
+	end
+
+	function sortron.getInventorySize()
+		-- write command "Read inventory size"
+		sortron.writeWord(SORTRON_SLOT, 65535)
+		sortron.write(SORTRON_COMMAND, SORTRON_COMMAND_SIZE)
+
+		-- force command processing
+		sortron.sortronProcessCommand()
+
+		-- read result
+		return sortron.readWord(SORTRON_SLOT)
+	end
+
+	function sortron.getSlot(slot)
+		-- write command "Read inventory slot"
+		sortron.writeWord(SORTRON_SLOT, slot)
+		sortron.write(SORTRON_COMMAND, SORTRON_COMMAND_SLOT)
+
+		-- force command processing
+		sortron.sortronProcessCommand()
+		local status = sortron.read(SORTRON_COMMAND)
+		if status ~= 0 then
+			error(string.format("Sortron returned error %u while processing command.", status), 1)
+		end
+
+		-- read result
+		return {
+			quantity = sortron.read(SORTRON_QUANTITY),
+			itemId = sortron.readDWord(SORTRON_ITEM_ID),
+			damage = sortron.readWord(SORTRON_DAMAGE),
+			maxDamage = sortron.readWord(SORTRON_MAX_DAMAGE),
+		}
+	end
+
+	function sortron.pull(slot, quantity, color, nodelay)
+		-- write command "Pull"
+		sortron.writeWord(SORTRON_SLOT, slot)
+		sortron.write(SORTRON_QUANTITY, quantity or 64)
+		sortron.writeWord(SORTRON_OUTPUT_COLOR, color or 0)
+		sortron.write(SORTRON_COMMAND, SORTRON_COMMAND_PULL)
+
+		-- force command processing
+		sortron.sortronProcessCommand()
+
+		if nodelay and sortron.read(SORTRON_COMMAND) ~= 0 then return nil end
+
+		while sortron.read(SORTRON_COMMAND) ~= 0 do
+			sleep(0)
+			sortron.sortronProcessCommand()
+		end
+
+		return sortron.read(SORTRON_QUANTITY)
+	end
+
+	function sortron.match(itemId, quantity, inputColor, outputColor)
+		-- write command "match"
+		sortron.write(SORTRON_QUANTITY, quantity or 1)
+		sortron.writeDWord(SORTRON_ITEM_ID, itemId or 0)
+		sortron.write(SORTRON_INPUT_COLOR, inputColor or 0)
+		sortron.write(SORTRON_OUTPUT_COLOR, outputColor or 0)
+		sortron.write(SORTRON_COMMAND, SORTRON_COMMAND_MATCH)
+	end
+
+	return sortron
+end
