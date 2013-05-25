@@ -1,5 +1,7 @@
 package eu.tomylobo.ccredbus;
 
+import java.util.logging.Logger;
+
 import com.eloraam.redpower.RedPowerBase;
 
 import eu.tomylobo.ccredbus.common.BlockNorthBridge;
@@ -39,6 +41,8 @@ public class CCRedbus {
 		public static int northBridgeBlockID = 1320;
 	}
 
+	public static final Logger logger = Logger.getLogger("Minecraft");
+
 	@Mod.Instance("CCRedbus")
 	public static CCRedbus instance;
 
@@ -52,10 +56,6 @@ public class CCRedbus {
 
 	@Mod.Init
 	public void init(FMLInitializationEvent evt) {
-		/*OCSLog.init();
-
-		OCSLog.info( "CCRedbus version %s starting", FMLCommonHandler.instance().findContainerFor(instance).getVersion() );*/
-
 		creativeTab = ComputerCraftAPI.getCreativeTab();
 
 		Blocks.northBridgeBlock = new BlockNorthBridge(Config.northBridgeBlockID);
@@ -77,7 +77,8 @@ public class CCRedbus {
 	}
 
 	@Mod.PreInit
-	public void preInit( FMLPreInitializationEvent evt ) {
+	public void preInit(FMLPreInitializationEvent evt) {
+		logger.info("CCRedbus initializing...");
 		Configuration configFile = new Configuration(evt.getSuggestedConfigurationFile());
 
 		Config.northBridgeBlockID = configFile.getBlock("northBridgeBlockID", Config.northBridgeBlockID, "The block ID for the North Bridge block").getInt();
