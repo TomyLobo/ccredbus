@@ -25,7 +25,7 @@ import dan200.computer.api.ComputerCraftAPI;
 @Mod(
 	modid = "CCRedbus",
 	name = "CCRedbus",
-	version = "0.0.5",
+	version = "0.0.6",
 	dependencies = "required-after:ComputerCraft;after:CCTurtle;required-after:RedPowerMachine"
 )
 @NetworkMod(
