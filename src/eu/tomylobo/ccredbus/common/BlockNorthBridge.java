@@ -34,28 +34,29 @@ public class BlockNorthBridge extends Block {
 		if (!world.isRemote) {
 			int dir = MathHelper.floor_double( living.rotationYaw * 4 / 360 + 0.5 ) & 3;
 
-			world.setBlockMetadataWithNotify(x, y, z, getPlacementDir(dir));
+			world.setBlockMetadataWithNotify(x, y, z, dir);
 		}
 
 		super.onBlockPlacedBy(world, x, y, z, living);
 	}
 
-	private int getPlacementDir(int dir) {
-		switch (dir) {
-		case 0:
-			return 2;
+	private static int TX_BOTTOM = 0;
+	private static int TX_TOP = 1;
+	private static int TX_FRONT = 2;
+	private static int TX_BACK = 3;
+	private static int TX_RIGHT = 4;
+	private static int TX_LEFT = 5;
 
-		case 1:
-			return 5;
-
-		case 2:
-			return 3;
-
-		case 3:
-			return 4;
-		}
-		return 0;
-	}
+	private static final int[][] sides = {
+		// facing 0=east
+		{ TX_BOTTOM, TX_TOP, TX_FRONT, TX_BACK, TX_LEFT, TX_RIGHT },
+		// facing 1=south
+		{ TX_BOTTOM, TX_TOP, TX_LEFT, TX_RIGHT, TX_BACK, TX_FRONT },
+		// facing 2=west
+		{ TX_BOTTOM, TX_TOP, TX_BACK, TX_FRONT, TX_RIGHT, TX_LEFT },
+		// facing 3=north
+		{ TX_BOTTOM, TX_TOP, TX_RIGHT, TX_LEFT, TX_FRONT, TX_BACK },
+	};
 
 	// Textures
 	@Override
@@ -65,24 +66,9 @@ public class BlockNorthBridge extends Block {
 
 	@Override
 	public int getBlockTextureFromSideAndMetadata(int side, int meta) {
-		// inside inventory 
-		if (meta == 0) {
-			meta = 2;
-		}
+		if (meta > 3 || meta < 0)
+			meta = 0;
 
-		// top/bottom
-		if (side < 2)
-			return side;
-
-		// front
-		if (side == (meta & 7))
-			return 2;
-
-		// back
-		if ((side ^ 1) == (meta & 7))
-			return 3;
-
-		// sides
-		return 4;
+		return sides[meta][side];
 	}
 }
